@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+**/__pycache__
+**/*.pyc
+.pytest_cache
+data/
+dist/
+*.log
+*.tar
+*.tar.gz
+.vscode
+.idea
+.env
+.docker-tmp

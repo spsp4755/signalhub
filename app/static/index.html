@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SignalHub — AI/Agents Intelligence</title>
+  <link rel="stylesheet" href="/static/app.css" />
+  <link rel="stylesheet" href="/static/vendor/github.min.css" />
+  <script src="/static/vendor/marked.min.js"></script>
+  <script src="/static/vendor/purify.min.js"></script>
+  <script src="/static/vendor/highlight.min.js"></script>
+  <script src="/static/vendor/mermaid.min.js"></script>
+  <script src="/static/vendor/chart.umd.min.js"></script>
+  <script src="/static/vendor/wordcloud2.min.js"></script>
+  <script src="/static/vendor/vis-network.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <div class="brand-name">SignalHub</div>
+        <div class="brand-sub">AI · Agents Intelligence</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#" data-tab="dashboard" class="active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        대시보드
+      </a>
+      <a href="#" data-tab="keywords">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        키워드
+      </a>
+      <a href="#" data-tab="insights">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        인사이트
+      </a>
+      <a href="#" data-tab="results">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        분석 결과
+      </a>
+      <a href="#" data-tab="settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        설정
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="status-dot" id="status-dot"></div>
+      <div>
+        <div class="status-label">시스템 상태</div>
+        <div class="status-text" id="status-text">확인 중...</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="page-title">대시보드</h1>
+        <p class="page-sub" id="page-sub">AI / Agents 동향을 한눈에</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="refresh-all" class="btn btn-ghost" title="새로고침">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          새로고침
+        </button>
+        <button id="quick-run-all" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          전체 실행
+        </button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section class="tab" data-tab="dashboard">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon blue">KW</div><div><div class="stat-value" id="s-keywords">—</div><div class="stat-label">키워드 <span id="s-keywords-enabled" class="muted"></span></div></div></div>
+        <div class="stat-card"><div class="stat-icon green">#</div><div><div class="stat-value" id="s-total">—</div><div class="stat-label">총 분석 건수</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber">AT</div><div><div class="stat-value" id="s-auto">—</div><div class="stat-label">자동 실행</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">MN</div><div><div class="stat-value" id="s-manual">—</div><div class="stat-label">수동 실행</div></div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3>키워드별 누적 분석</h3><span class="chip" id="s-model">—</span></div>
+          <div class="card-body">
+            <table class="tbl">
+              <thead><tr><th>키워드</th><th class="num">분석 수</th><th>최근 실행</th></tr></thead>
+              <tbody id="s-per-keyword"><tr><td colspan="3" class="empty">로딩 중...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>자동 수집 일정</h3><span class="chip chip-ok" id="s-schedule">—</span></div>
+          <div class="card-body">
+            <div class="meta-row"><span class="meta-key">다음 실행</span><span id="s-next">—</span></div>
+            <div class="meta-row"><span class="meta-key">마지막 실행</span><span id="s-last">—</span></div>
+            <div class="meta-row"><span class="meta-key">타임존</span><span>Asia/Seoul</span></div>
+            <div class="meta-row"><span class="meta-key">LLM 엔드포인트</span><span id="s-endpoint" class="mono">—</span></div>
+            <div style="margin-top:16px;">
+              <button id="quick-run-input-toggle" class="btn btn-ghost btn-sm">특정 키워드 즉시 실행</button>
+              <div id="quick-run-input-wrap" style="display:none; margin-top:10px;">
+                <div class="row">
+                  <input id="quick-run-input" type="text" placeholder="예: LangGraph, MoE, RAG..." />
+                  <button id="quick-run-btn" class="btn btn-primary btn-sm">실행</button>
+                </div>
+                <div id="quick-run-status" class="hint"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>최근 분석</h3>
+          <a href="#" class="link" data-tab-link="results">모두 보기 →</a>
+        </div>
+        <div class="card-body"><div id="recent-list"><div class="empty">로딩 중...</div></div></div>
+      </div>
+    </section>
+
+    <!-- KEYWORDS -->
+    <section class="tab hidden" data-tab="keywords">
+      <div class="card">
+        <div class="card-head"><h3>키워드 추가</h3></div>
+        <div class="card-body">
+          <div class="row">
+            <input id="kw-input" type="text" placeholder="예: LangGraph, MoE, RAG, 에이전트..." />
+            <button id="kw-add" class="btn btn-primary">추가</button>
+          </div>
+          <div class="hint">활성(ON) 키워드는 자동 수집 시간에 arXiv · HuggingFace · GeekNews · AITimes에서 수집·분석됩니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>등록된 키워드</h3>
+          <div class="row"><input id="kw-search" type="text" placeholder="검색..." class="input-sm" /></div>
+        </div>
+        <div class="card-body">
+          <table class="tbl">
+            <thead><tr><th>이름</th><th>상태</th><th class="num">분석 수</th><th>최근 실행</th><th>등록일</th><th class="actions">작업</th></tr></thead>
+            <tbody id="kw-list"><tr><td colspan="6" class="empty">로딩 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section class="tab hidden" data-tab="insights">
+      <div class="card">
+        <div class="card-head">
+          <h3>분석 활동 타임라인</h3>
+          <span class="chip" id="ins-sample">—</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chart-timeline"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <h3>토픽 워드클라우드</h3>
+            <span class="muted" style="font-size:12px;">클릭 시 키워드로 추가</span>
+          </div>
+          <div class="card-body">
+            <div id="wordcloud" class="wc-wrap"></div>
+            <div id="top-tags-fallback" class="tags-list" style="margin-top:10px;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>빈출 태그 TOP 20</h3></div>
+          <div class="card-body">
+            <div class="chart-wrap-sm"><canvas id="chart-tags"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>키워드-토픽 온톨로지 네트워크</h3>
+          <div class="row">
+            <button id="net-physics-toggle" class="btn btn-ghost btn-sm">물리 효과 ON/OFF</button>
+            <button id="net-refit" class="btn btn-ghost btn-sm">재정렬</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="network" class="net-wrap"></div>
+          <div class="hint">파란 노드 = 등록 키워드 / 회색 노드 = 추출 토픽. 선 두께 = 동시 등장 빈도.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>자주 함께 등장하는 토픽 쌍</h3></div>
+        <div class="card-body">
+          <table class="tbl">
+            <thead><tr><th>토픽 A</th><th>토픽 B</th><th class="num">동시 등장</th></tr></thead>
+            <tbody id="ins-pairs"><tr><td colspan="3" class="empty">로딩 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="tab hidden" data-tab="results">
+      <div class="card">
+        <div class="card-head"><h3>필터</h3></div>
+        <div class="card-body">
+          <div class="row">
+            <select id="f-keyword" class="input-sm"><option value="">전체 키워드</option></select>
+            <select id="f-run-type" class="input-sm">
+              <option value="">전체 실행 타입</option>
+              <option value="auto">자동 (auto)</option>
+              <option value="manual">수동 (manual)</option>
+            </select>
+            <select id="f-limit" class="input-sm">
+              <option value="20">20개</option>
+              <option value="50">50개</option>
+              <option value="100">100개</option>
+            </select>
+            <button id="f-apply" class="btn btn-primary btn-sm">적용</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>분석 결과 <span class="muted" id="r-count"></span></h3></div>
+        <div class="card-body"><div id="results-list"><div class="empty">로딩 중...</div></div></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="tab hidden" data-tab="settings">
+      <div class="card">
+        <div class="card-head">
+          <h3>LLM 설정</h3>
+          <span class="muted" style="font-size:12px;">저장 시 즉시 반영됩니다</span>
+        </div>
+        <div class="card-body">
+          <form id="form-llm" class="form-grid">
+            <label>엔드포인트 (Base URL)<input name="vllm_base_url" type="text" placeholder="http://localhost:11434/v1" /></label>
+            <label>API Key<input name="vllm_api_key" type="text" placeholder="ollama" /></label>
+            <label>모델명<input name="vllm_model" type="text" placeholder="gemma4:e2b" /></label>
+            <label>Max tokens<input name="llm_max_tokens" type="number" min="256" max="32768" step="256" /></label>
+            <label>Temperature<input name="llm_temperature" type="number" min="0" max="2" step="0.1" /></label>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>자동 수집 일정</h3></div>
+        <div class="card-body">
+          <form id="form-schedule" class="form-grid">
+            <label>시 (0~23)<input name="auto_run_hour" type="number" min="0" max="23" /></label>
+            <label>분 (0~59)<input name="auto_run_minute" type="number" min="0" max="59" /></label>
+          </form>
+          <div class="hint">타임존: Asia/Seoul · 저장 시 스케줄러가 재등록됩니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>수집 소스</h3></div>
+        <div class="card-body">
+          <form id="form-sources" class="form-grid">
+            <label>arXiv 수집 수<input name="arxiv_max_results" type="number" min="1" max="20" /></label>
+            <label>HuggingFace 수집 수<input name="huggingface_max_results" type="number" min="1" max="20" /></label>
+            <label>GeekNews 수집 수<input name="geeknews_max_results" type="number" min="1" max="20" /></label>
+            <label class="full">GeekNews RSS URL<input name="geeknews_rss_url" type="text" /></label>
+            <label>AITimes 수집 수<input name="aitimes_max_results" type="number" min="1" max="20" /></label>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>메일 알림 (SMTP)</h3>
+          <span class="muted" style="font-size:12px;">수집/분석 완료 시 이메일 발송 · 보안 없이 전송 가능</span>
+        </div>
+        <div class="card-body">
+          <form id="form-smtp" class="form-grid">
+            <label>SMTP Host<input name="smtp_host" type="text" placeholder="예: smtp.local (비우면 비활성)" /></label>
+            <label>SMTP Port<input name="smtp_port" type="number" min="1" max="65535" placeholder="25" /></label>
+            <label class="full">발신자 주소<input name="smtp_sender" type="email" placeholder="signalhub@localhost" /></label>
+            <label>사용자 (선택)<input name="smtp_username" type="text" placeholder="(비워두면 no-auth)" /></label>
+            <label>비밀번호 (선택)<input name="smtp_password" type="password" placeholder="(no-auth 시 공란)" /></label>
+            <label>STARTTLS 사용<select name="smtp_use_tls"><option value="false">아니요</option><option value="true">예</option></select></label>
+            <label class="full">제목 접두사<input name="smtp_subject_prefix" type="text" placeholder="[SignalHub]" /></label>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>수신자 관리</h3>
+          <div class="row">
+            <button id="rcpt-test-all" class="btn btn-ghost btn-sm">전체에 테스트 발송</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <input id="rcpt-input" type="email" placeholder="new@example.com" />
+            <button id="rcpt-add" class="btn btn-primary btn-sm">추가</button>
+          </div>
+          <table class="tbl" style="margin-top:12px;">
+            <thead><tr><th>이메일</th><th>상태</th><th>등록일</th><th class="actions">작업</th></tr></thead>
+            <tbody id="rcpt-list"><tr><td colspan="4" class="empty">등록된 수신자가 없습니다.</td></tr></tbody>
+          </table>
+          <div class="hint">비활성 수신자는 알림 대상에서 제외됩니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>데이터 보존</h3></div>
+        <div class="card-body">
+          <form id="form-retention" class="form-grid">
+            <label>보존 기간 (일, 0 = 무제한)<input name="retention_days" type="number" min="0" max="3650" placeholder="0" /></label>
+          </form>
+          <div class="hint">매일 03:30 (Asia/Seoul) 기준으로 지정된 기간 이전의 분석 결과가 삭제됩니다.</div>
+        </div>
+      </div>
+
+      <div class="row" style="padding: 8px 18px 24px;">
+        <button id="set-save" class="btn btn-primary">저장</button>
+        <button id="set-reset" class="btn btn-danger">.env 기본값으로 초기화</button>
+        <span id="set-status" class="hint"></span>
+      </div>
+    </section>
+  </main>
+
+  <!-- DETAIL MODAL -->
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <div class="modal modal-wide">
+      <div class="modal-head">
+        <div>
+          <h3 id="m-title">—</h3>
+          <div class="meta" id="m-meta"></div>
+        </div>
+        <div class="row">
+          <button id="m-copy" class="btn btn-ghost btn-sm">MD 복사</button>
+          <button id="m-close" class="btn btn-ghost btn-sm">닫기</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <article id="m-body" class="md-body"></article>
+          <aside class="modal-side">
+            <div class="side-section">
+              <h4>토픽 태그</h4>
+              <div id="m-tags" class="tags-list"><span class="muted">—</span></div>
+            </div>
+            <div class="side-section">
+              <h4>출처 · arXiv</h4>
+              <ul id="m-papers-arxiv" class="src-list"><li class="muted">—</li></ul>
+            </div>
+            <div class="side-section">
+              <h4>출처 · HuggingFace</h4>
+              <ul id="m-papers-hf" class="src-list"><li class="muted">—</li></ul>
+            </div>
+            <div class="side-section">
+              <h4>출처 · GeekNews</h4>
+              <ul id="m-news-geeknews" class="src-list"><li class="muted">—</li></ul>
+            </div>
+            <div class="side-section">
+              <h4>출처 · AITimes</h4>
+              <ul id="m-news-aitimes" class="src-list"><li class="muted">—</li></ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD KEYWORD PROMPT MODAL -->
+  <div class="modal-backdrop hidden" id="add-kw-backdrop">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-head"><h3>키워드 추가</h3></div>
+      <div class="modal-body">
+        <p style="margin:0 0 10px; font-size:13px;">다음 토픽을 키워드로 추가할까요?</p>
+        <div id="add-kw-name" style="font-size:16px; font-weight:600; padding:10px; background:var(--bg-alt); border-radius:6px; margin-bottom:14px;"></div>
+        <div class="row" style="justify-content:flex-end;">
+          <button id="add-kw-cancel" class="btn btn-ghost btn-sm">취소</button>
+          <button id="add-kw-confirm" class="btn btn-primary btn-sm">추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

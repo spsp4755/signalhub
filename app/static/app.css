@@ -208,7 +208,7 @@ body {
 
 /* ----- Form ----- */
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-input[type=text], input[type=number], input[type=email], input[type=password], input[type=url], input[type=search], input[type=tel], select {
+input[type=text], input[type=number], input[type=email], input[type=password], input[type=url], input[type=search], input[type=tel], select, textarea {
   padding: 8px 12px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
@@ -219,7 +219,8 @@ input[type=text], input[type=number], input[type=email], input[type=password], i
   flex: 1;
   min-width: 180px;
 }
-input[type=text]:focus, input[type=number]:focus, input[type=email]:focus, input[type=password]:focus, input[type=url]:focus, input[type=search]:focus, input[type=tel]:focus, select:focus {
+textarea { resize: vertical; min-height: 88px; }
+input[type=text]:focus, input[type=number]:focus, input[type=email]:focus, input[type=password]:focus, input[type=url]:focus, input[type=search]:focus, input[type=tel]:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
@@ -365,6 +366,35 @@ input[type=text]:focus, input[type=number]:focus, input[type=email]:focus, input
   transition: background 0.12s;
 }
 .tags-list .tag:hover { background: #c3d5fa; }
+
+.rcpt-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 320px;
+}
+.rcpt-keywords .tag { cursor: default; }
+.keyword-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  background: #fbfcfe;
+}
+.keyword-picker label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.keyword-picker label:hover { background: var(--bg-alt); }
+.keyword-picker input { flex: 0 0 auto; min-width: 0; }
 
 /* ----- Markdown body ----- */
 .md-body { font-size: 14px; line-height: 1.7; color: var(--fg); }

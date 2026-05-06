@@ -6,9 +6,17 @@ AI / Agents 분야의 기술 동향을 자동 수집·요약하고 팀에 공유
 - 분석: OpenAI-compatible API (vLLM / Ollama 등)
 - 저장: SQLite
 - 스케줄: 매일 자동 실행
-- 알림: SMTP 메일 발송
+- 알림: SMTP 메일 발송, 수신자별 관심 키워드 설정, 자동 실행 다이제스트 발송
 - 프런트엔드: 모든 정적 라이브러리 로컬 포함
 - 오프라인 배포: wheelhouse 포함, `Podman` 기반 빌드 가능
+
+## 주요 기능
+
+- 키워드는 줄바꿈, 쉼표, 세미콜론으로 여러 개를 한 번에 추가할 수 있습니다.
+- 자동 실행은 활성 키워드별 분석 결과를 DB에 각각 저장한 뒤, 메일은 수신자별 관심 키워드 기준으로 묶어서 보냅니다.
+- 수신자에 관심 키워드를 지정하지 않으면 전체 활성 키워드 다이제스트를 받습니다.
+- 메일 본문은 뉴스 브리핑을 먼저 보여주고, 논문/모델 브리핑은 뒤에 배치합니다.
+- 메일의 Markdown 링크와 출처 제목은 클릭 가능한 링크로 렌더링됩니다.
 
 ## 오프라인/폐쇄망 준비
 
@@ -28,14 +36,31 @@ AI / Agents 분야의 기술 동향을 자동 수집·요약하고 팀에 공유
 ## 실행
 
 ```bash
+cp .env.example .env
+mkdir -p data
+
 podman run -d \
   --name signalhub \
+  --restart unless-stopped \
   -p 8765:8765 \
+  --env-file ./.env \
   -v ./data:/app/data \
   signalhub:offline
 ```
 
 브라우저: `http://localhost:8765`
+
+## LLM 설정
+
+`.env.example` 은 다음 OpenAI-compatible API 값을 기본 예시로 포함합니다.
+
+```env
+VLLM_BASE_URL=http://59.5.41.80:8007/v1
+VLLM_API_KEY=dummy
+VLLM_MODEL=qwen36
+```
+
+다른 vLLM/Ollama 서버를 쓰는 경우 `.env`에서 위 값을 바꾸면 됩니다. `VLLM_BASE_URL`은 `/v1`까지 포함해야 합니다.
 
 ## Podman에서 호스트 LLM 연결
 
@@ -60,3 +85,4 @@ bash scripts/build_release.sh latest
 
 - `data/analysis.db` 가 존재하면 기존 키워드/분석 이력이 함께 반입됩니다.
 - 완전히 새 환경으로 시작하려면 `data/analysis.db` 를 제외한 상태로 배포하세요.
+- 기능 스모크 테스트는 컨테이너 안에서 `python scripts/smoke_test.py` 로 실행할 수 있습니다.

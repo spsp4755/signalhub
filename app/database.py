@@ -38,6 +38,18 @@ CREATE TABLE IF NOT EXISTS recipient (
     enabled INTEGER NOT NULL DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS recipient_keyword (
+    recipient_id INTEGER NOT NULL,
+    keyword_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (recipient_id, keyword_id),
+    FOREIGN KEY (recipient_id) REFERENCES recipient(id) ON DELETE CASCADE,
+    FOREIGN KEY (keyword_id) REFERENCES keyword(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_recipient_keyword_keyword
+    ON recipient_keyword(keyword_id);
 """
 
 
@@ -77,6 +89,7 @@ def seed_default_keywords() -> None:
 @contextmanager
 def connect():
     conn = sqlite3.connect(settings.db_path)
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     try:
         yield conn

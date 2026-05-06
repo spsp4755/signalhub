@@ -8,6 +8,8 @@ services:
       - "8765:8765"
     volumes:
       - ./data:/app/data
+    env_file:
+      - ./.env
     environment:
       - TZ=Asia/Seoul
       - DB_PATH=/app/data/analysis.db

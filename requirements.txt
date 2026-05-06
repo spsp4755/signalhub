@@ -6,3 +6,7 @@ httpx==0.28.1
 openai==2.32.0
 pydantic-settings==2.14.0
 python-dotenv==1.2.2
+arxiv==3.0.0
+feedparser==6.0.12
+requests==2.33.1
+charset-normalizer==3.4.7

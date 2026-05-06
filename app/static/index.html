@@ -128,10 +128,10 @@
         <div class="card-head"><h3>키워드 추가</h3></div>
         <div class="card-body">
           <div class="row">
-            <input id="kw-input" type="text" placeholder="예: LangGraph, MoE, RAG, 에이전트..." />
+            <textarea id="kw-input" rows="4" placeholder="예: LangGraph, MoE, RAG&#10;에이전트&#10;멀티모달"></textarea>
             <button id="kw-add" class="btn btn-primary">추가</button>
           </div>
-          <div class="hint">활성(ON) 키워드는 자동 수집 시간에 arXiv · HuggingFace · GeekNews · AITimes에서 수집·분석됩니다.</div>
+          <div class="hint">줄바꿈, 쉼표, 세미콜론으로 여러 키워드를 한 번에 추가할 수 있습니다. 활성(ON) 키워드는 자동 수집 시간에 수집·분석됩니다.</div>
         </div>
       </div>
 
@@ -307,10 +307,10 @@
             <button id="rcpt-add" class="btn btn-primary btn-sm">추가</button>
           </div>
           <table class="tbl" style="margin-top:12px;">
-            <thead><tr><th>이메일</th><th>상태</th><th>등록일</th><th class="actions">작업</th></tr></thead>
-            <tbody id="rcpt-list"><tr><td colspan="4" class="empty">등록된 수신자가 없습니다.</td></tr></tbody>
+            <thead><tr><th>이메일</th><th>상태</th><th>관심 키워드</th><th>등록일</th><th class="actions">작업</th></tr></thead>
+            <tbody id="rcpt-list"><tr><td colspan="5" class="empty">등록된 수신자가 없습니다.</td></tr></tbody>
           </table>
-          <div class="hint">비활성 수신자는 알림 대상에서 제외됩니다.</div>
+          <div class="hint">관심 키워드를 선택하지 않은 수신자는 전체 활성 키워드 다이제스트를 받습니다.</div>
         </div>
       </div>
 
@@ -385,6 +385,27 @@
         <div class="row" style="justify-content:flex-end;">
           <button id="add-kw-cancel" class="btn btn-ghost btn-sm">취소</button>
           <button id="add-kw-confirm" class="btn btn-primary btn-sm">추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECIPIENT KEYWORDS MODAL -->
+  <div class="modal-backdrop hidden" id="rcpt-kw-backdrop">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-head">
+        <div>
+          <h3>수신자 관심 키워드</h3>
+          <div class="meta" id="rcpt-kw-email">—</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="rcpt-kw-list" class="keyword-picker"></div>
+        <div class="hint">선택하지 않으면 전체 활성 키워드를 받습니다.</div>
+        <div class="row" style="justify-content:flex-end; margin-top:14px;">
+          <button id="rcpt-kw-clear" class="btn btn-ghost btn-sm">전체로 받기</button>
+          <button id="rcpt-kw-cancel" class="btn btn-ghost btn-sm">취소</button>
+          <button id="rcpt-kw-save" class="btn btn-primary btn-sm">저장</button>
         </div>
       </div>
     </div>

@@ -8,6 +8,12 @@ class KeywordCreate(BaseModel):
     enabled: bool = True
 
 
+class KeywordBulkCreate(BaseModel):
+    text: str | None = Field(default=None, max_length=5000)
+    names: list[str] = Field(default_factory=list)
+    enabled: bool = True
+
+
 class KeywordUpdate(BaseModel):
     enabled: bool
 
@@ -17,6 +23,12 @@ class KeywordOut(BaseModel):
     name: str
     enabled: bool
     created_at: datetime
+
+
+class KeywordBulkOut(BaseModel):
+    created: list[KeywordOut]
+    existing: list[str] = Field(default_factory=list)
+    invalid: list[str] = Field(default_factory=list)
 
 
 class RunRequest(BaseModel):

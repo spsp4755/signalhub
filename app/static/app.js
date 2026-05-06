@@ -257,10 +257,46 @@ $('#kw-search')?.addEventListener('input', () => {
   });
 });
 
+const splitKeywords = (text) => {
+  const seen = new Set();
+  return String(text || '')
+    .split(/[\n,;]+/)
+    .map((v) => v.replace(/\s+/g, ' ').trim())
+    .filter((v) => {
+      if (!v) return false;
+      const key = v.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
 async function addKeyword(name) {
   try {
     await api('/keywords', { method: 'POST', body: JSON.stringify({ name, enabled: true }) });
     toast(`"${name}" 추가됨`);
+    _keywordCache = [];
+    if (!$('[data-tab="keywords"]').classList.contains('hidden')) loadKeywords();
+    return true;
+  } catch (e) {
+    toast('추가 실패: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function addKeywordsFromInput(text) {
+  const names = splitKeywords(text);
+  if (!names.length) return false;
+  try {
+    const r = await api('/keywords/bulk', {
+      method: 'POST',
+      body: JSON.stringify({ names, enabled: true }),
+    });
+    const created = r.created?.length || 0;
+    const existing = r.existing?.length || 0;
+    const invalid = r.invalid?.length || 0;
+    toast(`키워드 추가 완료: 신규 ${created} · 기존 ${existing} · 제외 ${invalid}`);
+    _keywordCache = [];
     if (!$('[data-tab="keywords"]').classList.contains('hidden')) loadKeywords();
     return true;
   } catch (e) {
@@ -271,12 +307,10 @@ async function addKeyword(name) {
 
 $('#kw-add').addEventListener('click', async () => {
   const input = $('#kw-input');
-  const name = input.value.trim();
-  if (!name) return;
-  if (await addKeyword(name)) input.value = '';
+  if (await addKeywordsFromInput(input.value)) input.value = '';
 });
 $('#kw-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') $('#kw-add').click();
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $('#kw-add').click();
 });
 
 $('#kw-list').addEventListener('click', async (e) => {
@@ -286,7 +320,7 @@ $('#kw-list').addEventListener('click', async (e) => {
   const name = tr.dataset.kwName;
   if (e.target.classList.contains('kw-del')) {
     if (!confirm(`"${name}" 삭제하시겠습니까?`)) return;
-    try { await api(`/keywords/${id}`, { method: 'DELETE' }); toast(`"${name}" 삭제됨`); loadKeywords(); }
+    try { await api(`/keywords/${id}`, { method: 'DELETE' }); toast(`"${name}" 삭제됨`); _keywordCache = []; loadKeywords(); }
     catch (err) { toast('삭제 실패: ' + err.message, 'error'); }
   } else if (e.target.classList.contains('kw-run')) {
     toast(`"${name}" 실행 중...`);
@@ -699,6 +733,7 @@ async function loadSettings() {
         inp.value = val;
       }
     });
+    await ensureKeywordCache();
     loadRecipients();
   } catch (e) {
     toast('설정 로드 실패: ' + e.message, 'error');
@@ -751,8 +786,14 @@ $('#set-reset').addEventListener('click', async () => {
 });
 
 /* ============== Recipients ============== */
+async function ensureKeywordCache() {
+  if (!_keywordCache.length) _keywordCache = await api('/keywords');
+  return _keywordCache;
+}
+
 async function loadRecipients() {
   try {
+    await ensureKeywordCache();
     const rows = await api('/recipients');
     renderRecipients(rows);
   } catch (e) {
@@ -763,10 +804,17 @@ async function loadRecipients() {
 function renderRecipients(rows) {
   const tbody = $('#rcpt-list');
   if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">등록된 수신자가 없습니다.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">등록된 수신자가 없습니다.</td></tr>';
     return;
   }
-  tbody.innerHTML = rows.map((r) => `
+  tbody.innerHTML = rows.map((r) => {
+    const keywords = r.keywords || [];
+    const keywordIds = r.keyword_ids || [];
+    const keywordChips = keywords.length
+      ? keywords.slice(0, 5).map((name) => `<span class="tag">${esc(name)}</span>`).join('') +
+        (keywords.length > 5 ? `<span class="tag">+${keywords.length - 5}</span>` : '')
+      : '<span class="muted">전체</span>';
+    return `
     <tr data-rcpt-id="${r.id}" data-rcpt-email="${esc(r.email)}">
       <td>
         <span class="rcpt-view"><strong>${esc(r.email)}</strong></span>
@@ -778,6 +826,10 @@ function renderRecipients(rows) {
           <span class="toggle-slider"></span>
         </label>
       </td>
+      <td>
+        <div class="rcpt-keywords">${keywordChips}</div>
+        <button class="btn btn-ghost btn-sm rcpt-kw-btn" data-keyword-ids="${esc(keywordIds.join(','))}" style="margin-top:6px;">설정</button>
+      </td>
       <td>${formatDate(r.created_at)}</td>
       <td class="actions">
         <button class="btn btn-ghost btn-sm rcpt-edit-btn">수정</button>
@@ -785,7 +837,8 @@ function renderRecipients(rows) {
         <button class="btn btn-ghost btn-sm rcpt-cancel-btn" style="display:none;">취소</button>
         <button class="btn btn-danger btn-sm rcpt-del-btn">삭제</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function addRecipient() {
@@ -810,6 +863,15 @@ $('#rcpt-list')?.addEventListener('click', async (e) => {
   if (!tr) return;
   const id = tr.dataset.rcptId;
   const currentEmail = tr.dataset.rcptEmail;
+
+  if (e.target.classList.contains('rcpt-kw-btn')) {
+    const selectedIds = (e.target.dataset.keywordIds || '')
+      .split(',')
+      .map((v) => Number(v))
+      .filter(Boolean);
+    openRecipientKeywordModal(id, currentEmail, selectedIds);
+    return;
+  }
 
   if (e.target.classList.contains('rcpt-del-btn')) {
     if (!confirm(`"${currentEmail}" 수신자를 삭제할까요?`)) return;
@@ -870,6 +932,46 @@ $('#rcpt-test-all')?.addEventListener('click', async () => {
     const r = await api('/recipients/test', { method: 'POST', body: JSON.stringify({}) });
     toast(`테스트 발송 완료 · 수신자 ${r.recipients.length}명`);
   } catch (e) { toast('테스트 발송 실패: ' + e.message, 'error'); }
+});
+
+function openRecipientKeywordModal(id, email, selectedIds) {
+  const selected = new Set(selectedIds.map(Number));
+  $('#rcpt-kw-backdrop').dataset.rcptId = id;
+  $('#rcpt-kw-email').textContent = email;
+  const box = $('#rcpt-kw-list');
+  box.innerHTML = _keywordCache.length
+    ? _keywordCache.map((kw) => `
+        <label>
+          <input type="checkbox" value="${kw.id}" ${selected.has(Number(kw.id)) ? 'checked' : ''} />
+          <span>${esc(kw.name)}</span>
+        </label>`).join('')
+    : '<div class="empty">등록된 키워드가 없습니다.</div>';
+  $('#rcpt-kw-backdrop').classList.remove('hidden');
+}
+
+$('#rcpt-kw-cancel')?.addEventListener('click', () => $('#rcpt-kw-backdrop').classList.add('hidden'));
+$('#rcpt-kw-backdrop')?.addEventListener('click', (e) => {
+  if (e.target.id === 'rcpt-kw-backdrop') $('#rcpt-kw-backdrop').classList.add('hidden');
+});
+$('#rcpt-kw-clear')?.addEventListener('click', () => {
+  $$('#rcpt-kw-list input[type="checkbox"]').forEach((el) => { el.checked = false; });
+});
+$('#rcpt-kw-save')?.addEventListener('click', async () => {
+  const id = $('#rcpt-kw-backdrop').dataset.rcptId;
+  const keywordIds = Array.from($$('#rcpt-kw-list input[type="checkbox"]:checked'))
+    .map((el) => Number(el.value))
+    .filter(Boolean);
+  try {
+    await api(`/recipients/${id}/keywords`, {
+      method: 'PATCH',
+      body: JSON.stringify({ keyword_ids: keywordIds }),
+    });
+    $('#rcpt-kw-backdrop').classList.add('hidden');
+    toast('수신자 관심 키워드 저장됨');
+    loadRecipients();
+  } catch (e) {
+    toast('키워드 저장 실패: ' + e.message, 'error');
+  }
 });
 
 /* ============== Top actions ============== */
